@@ -11,7 +11,7 @@ import UIKit
 class CustomTextField: UITextField {
     
     var underlineView: UIView!
-    private let duration = 0.5
+    private let duration = 0.3
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -19,11 +19,6 @@ class CustomTextField: UITextField {
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        addTarget(self, action: #selector(self.didChangeValue), forControlEvents: .EditingChanged)
-    }
-    
-    deinit {
-        removeTarget(self, action: #selector(self.didChangeValue), forControlEvents: .EditingChanged)
     }
     
     override func layoutSubviews() {
@@ -44,50 +39,36 @@ class CustomTextField: UITextField {
         layoutIfNeeded()
     }
     
-    func addBecomeAnimation() {
+    func addTextFieldAnimation(isBecome: Bool) {
+        let key = isBecome ? "BecomeLineAnimation" : "ResignLineAnimation"
+        let backgroundColor = isBecome ? UIColor.blackColor().CGColor : UIColor.lightGrayColor().CGColor
+        
         let lineAnimation = CABasicAnimation(keyPath: "backgroundColor")
         lineAnimation.delegate = self
         lineAnimation.fromValue = underlineView.layer.backgroundColor
-        lineAnimation.toValue = UIColor.blackColor().CGColor
+        lineAnimation.toValue = backgroundColor
         lineAnimation.duration = duration
         lineAnimation.fillMode = kCAFillModeForwards
         lineAnimation.removedOnCompletion = false
         
-        underlineView.layer.addAnimation(lineAnimation, forKey: "BecomeLineAnimation")
-    }
-    
-    func addResignAnimation() {
-        let lineAnimation = CABasicAnimation(keyPath: "backgroundColor")
-        lineAnimation.delegate = self
-        lineAnimation.fromValue = underlineView.layer.backgroundColor
-        lineAnimation.toValue = UIColor.lightGrayColor().CGColor
-        lineAnimation.duration = duration
-        lineAnimation.fillMode = kCAFillModeForwards
-        lineAnimation.removedOnCompletion = false
-        
-        underlineView.layer.addAnimation(lineAnimation, forKey: "ResignLineAnimation")
+        underlineView.layer.addAnimation(lineAnimation, forKey: key)
     }
     
     override func animationDidStop(anim: CAAnimation, finished flag: Bool) {
         if underlineView.layer.animationForKey("BecomeLineAnimation") != nil {
             underlineView.layer.backgroundColor = UIColor.blackColor().CGColor
             underlineView.layer.removeAnimationForKey("BecomeLineAnimation")
-        } else if underlineView.layer.animationForKey("ResignLineAnimation") != nil {
+        }
+        else if underlineView.layer.animationForKey("ResignLineAnimation") != nil {
             underlineView.layer.backgroundColor = UIColor.lightGrayColor().CGColor
             underlineView.layer.removeAnimationForKey("ResignLineAnimation")
         }
     }
     
-    func didChangeValue(sender: CustomTextField) -> Bool {
-        sender.underlineView.layer.removeAllAnimations()
-        sender.underlineView.layer.backgroundColor = UIColor.redColor().CGColor
-        
-        return true
-    }
-    
     override func becomeFirstResponder() -> Bool {
         if text?.characters.count == 0 {
-            addBecomeAnimation()
+            underlineView.layer.removeAllAnimations()
+            addTextFieldAnimation(true)
         }
         
         return super.becomeFirstResponder()
@@ -95,7 +76,8 @@ class CustomTextField: UITextField {
     
     override func resignFirstResponder() -> Bool {
         if text?.characters.count == 0 {
-            addResignAnimation()
+            underlineView.layer.removeAllAnimations()
+            addTextFieldAnimation(false)
         }
         
         return super.resignFirstResponder()

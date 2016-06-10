@@ -44,11 +44,7 @@ class CustomButton: UIButton {
             
             layer.removeAllAnimations()
             
-            if enabled {
-                addEnableAnimation()
-            } else {
-                addDisableAnimation()
-            }
+            addButtonAnimation(enabled)
         }
     }
     
@@ -57,21 +53,26 @@ class CustomButton: UIButton {
             layer.backgroundColor = UIColor.blueColor().CGColor
             layer.shadowOpacity = 0.5
             layer.removeAnimationForKey("EnableAnimation")
-        } else if layer.animationForKey("DisableAnimation") != nil {
+        }
+        else if layer.animationForKey("DisableAnimation") != nil {
             layer.backgroundColor = UIColor.lightGrayColor().CGColor
             layer.shadowOpacity = 0.0
             layer.removeAnimationForKey("DisableAnimation")
         }
     }
     
-    func addEnableAnimation() {
+    func addButtonAnimation(enabled: Bool)  {
+        let key = enabled ? "EnableAnimation" : "DisableAnimation"
+        let shadowOpacity = enabled ? 0.5 : 0.0
+        let backgroundColor = enabled ? UIColor.blueColor().CGColor : UIColor.lightGrayColor().CGColor
+        
         let lineAnimation = CABasicAnimation(keyPath: "backgroundColor")
         lineAnimation.fromValue = layer.backgroundColor
-        lineAnimation.toValue = UIColor.blueColor().CGColor
+        lineAnimation.toValue = backgroundColor
         
         let shadowAnimation = CABasicAnimation(keyPath: "shadowOpacity")
         shadowAnimation.fromValue = layer.shadowOpacity
-        shadowAnimation.toValue = 0.5
+        shadowAnimation.toValue = shadowOpacity
         
         let animationGroup = CAAnimationGroup()
         animationGroup.delegate = self
@@ -79,33 +80,6 @@ class CustomButton: UIButton {
         animationGroup.animations = [lineAnimation,shadowAnimation]
         animationGroup.fillMode = kCAFillModeForwards
         animationGroup.removedOnCompletion = false
-        layer.addAnimation(animationGroup, forKey: "EnableAnimation")
+        layer.addAnimation(animationGroup, forKey: key)
     }
-    
-    func addDisableAnimation() {
-        let lineAnimation = CABasicAnimation(keyPath: "backgroundColor")
-        lineAnimation.fromValue = layer.backgroundColor
-        lineAnimation.toValue = UIColor.lightGrayColor().CGColor
-        
-        let shadowAnimation = CABasicAnimation(keyPath: "shadowOpacity")
-        shadowAnimation.fromValue = layer.shadowOpacity
-        shadowAnimation.toValue = 0.0
-        
-        let animationGroup = CAAnimationGroup()
-        animationGroup.animations = [lineAnimation,shadowAnimation]
-        animationGroup.delegate = self
-        animationGroup.duration = duration
-        animationGroup.fillMode = kCAFillModeForwards
-        animationGroup.removedOnCompletion = false
-        layer.addAnimation(animationGroup, forKey: "DisableAnimation")
-    }
-    
-    /*
-    // Only override drawRect: if you perform custom drawing.
-    // An empty implementation adversely affects performance during animation.
-    override func drawRect(rect: CGRect) {
-        // Drawing code
-    }
-    */
-
 }
